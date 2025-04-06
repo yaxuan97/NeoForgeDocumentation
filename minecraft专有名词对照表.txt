@@ -1,0 +1,26 @@
+//固定
+继承			extend
+mod				mod
+Minecraft		Minecraft
+
+//技术
+刻				tick
+调度刻 			scheduled tick
+随机刻			random tick
+动画刻			animate tick
+方块			block
+方块实体		block entity
+实体			entity
+物品			item
+方块物品		blockitem
+方块状态		block state
+资源键			resource key
+方块属性		block properties
+方块类型		block type
+声音类型		sound type
+
+//基础
+原版			vanilla
+
+//游戏内容
+大型垂滴叶		Big Dripleaf
