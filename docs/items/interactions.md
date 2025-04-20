@@ -18,28 +18,28 @@ Every frame on the [physical client][physicalside], the `Minecraft` class update
 - It is checked that all required [feature flags][featureflag] for the [`ItemStack`][itemstack] in your main hand are enabled. If this check fails, the pipeline ends.
 - `InputEvent.InteractionKeyMappingTriggered` is fired with the left mouse button and the main hand. If the [event][event] is [canceled][cancel], the pipeline ends.
 - Depending on what you are looking at (using the [`HitResult`][hitresult] in `Minecraft`), different things happen:
-    - If you are looking at an [entity] that is within your reach:
-        - `AttackEntityEvent` is fired. If the event is canceled, the pipeline ends.
-        - `IItemExtension#onLeftClickEntity` is called. If it returns true, the pipeline ends.
-        - `Entity#isAttackable` is called on the target. If it returns false, the pipeline ends.
-        - `Entity#skipAttackInteraction` is called on the target. If it returns true, the pipeline ends.
-        - If the target is in the `minecraft:redirectable_projectile` tag (by default this is fireballs and wind charges) and an instance of `Projectile`, the target is deflected and the pipeline ends.
-        - Entity base damage (the value of the `minecraft:generic.attack_damage` [attribute]) and enchantment bonus damage are calculated as two separate floats. If both are 0, the pipeline ends.
-            - Note that this excludes [attribute modifiers][attributemodifier] from the main hand item, these are added after the check.
-        - `minecraft:generic.attack_damage` attribute modifiers from the main hand item are added to the base damage.
-        - `CriticalHitEvent` is fired. If the event's `#isCriticalHit` method returns true, the base damage is multiplied with the value returned from the event's `#getDamageMultiplier` method, which defaults to 1.5 if [a number of conditions][critical] pass and 1.0 otherwise, but may be modified by the event.
-        - Enchantment bonus damage is added to the base damage, resulting in the final damage value.
-        - [`Entity#hurt`][hurt] is called. If it returns false, the pipeline ends.
-        - If the target is an instance of `LivingEntity`, `LivingEntity#knockback` is called.
-            - Within that method, `LivingKnockBackEvent` is fired.
-        - If the attack cooldown is > 90%, the attack is not a critical hit, the player is on the ground and not moving faster than their `minecraft:generic.movement_speed` attribute value, a sweep attack is performed on nearby `LivingEntity`s.
-            - Within that method, `LivingEntity#knockback` is called again, which in turn fires `LivingKnockBackEvent` a second time.
-        - `Item#hurtEnemy` is called. This can be used for post-attack effects. For example, the mace launches the player back in the air here, if applicable.
-        - `Item#postHurtEnemy` is called. Durability damage is applied here.
-    - If you are looking at a [block] that is within your reach:
-        - The [block breaking sub-pipeline][blockbreak] is initiated.
-    - Otherwise:
-        - `PlayerInteractEvent.LeftClickEmpty` is fired.
+  - If you are looking at an [entity] that is within your reach:
+    - `AttackEntityEvent` is fired. If the event is canceled, the pipeline ends.
+    - `IItemExtension#onLeftClickEntity` is called. If it returns true, the pipeline ends.
+    - `Entity#isAttackable` is called on the target. If it returns false, the pipeline ends.
+    - `Entity#skipAttackInteraction` is called on the target. If it returns true, the pipeline ends.
+    - If the target is in the `minecraft:redirectable_projectile` tag (by default this is fireballs and wind charges) and an instance of `Projectile`, the target is deflected and the pipeline ends.
+    - Entity base damage (the value of the `minecraft:generic.attack_damage` [attribute]) and enchantment bonus damage are calculated as two separate floats. If both are 0, the pipeline ends.
+      - Note that this excludes [attribute modifiers][attributemodifier] from the main hand item, these are added after the check.
+    - `minecraft:generic.attack_damage` attribute modifiers from the main hand item are added to the base damage.
+    - `CriticalHitEvent` is fired. If the event's `#isCriticalHit` method returns true, the base damage is multiplied with the value returned from the event's `#getDamageMultiplier` method, which defaults to 1.5 if [a number of conditions][critical] pass and 1.0 otherwise, but may be modified by the event.
+    - Enchantment bonus damage is added to the base damage, resulting in the final damage value.
+    - [`Entity#hurt`][hurt] is called. If it returns false, the pipeline ends.
+    - If the target is an instance of `LivingEntity`, `LivingEntity#knockback` is called.
+      - Within that method, `LivingKnockBackEvent` is fired.
+    - If the attack cooldown is > 90%, the attack is not a critical hit, the player is on the ground and not moving faster than their `minecraft:generic.movement_speed` attribute value, a sweep attack is performed on nearby `LivingEntity`s.
+      - Within that method, `LivingEntity#knockback` is called again, which in turn fires `LivingKnockBackEvent` a second time.
+    - `Item#hurtEnemy` is called. This can be used for post-attack effects. For example, the mace launches the player back in the air here, if applicable.
+    - `Item#postHurtEnemy` is called. Durability damage is applied here.
+  - If you are looking at a [block] that is within your reach:
+    - The [block breaking sub-pipeline][blockbreak] is initiated.
+  - Otherwise:
+    - `PlayerInteractEvent.LeftClickEmpty` is fired.
 
 ## Right-Clicking an Item
 
@@ -48,22 +48,22 @@ During the right-clicking pipeline, a number of methods returning one of two res
 - `InputEvent.InteractionKeyMappingTriggered` is fired with the right mouse button and the main hand. If the [event][event] is [canceled][cancel], the pipeline ends.
 - Several circumstances are checked, for example that you are not in spectator mode or that all required [feature flags][featureflag] for the [`ItemStack`][itemstack] in your main hand are enabled. If at least one of these checks fails, the pipeline ends.
 - Depending on what you are looking at (using the [`HitResult`][hitresult] in `Minecraft`), different things happen:
-    - If you are looking at an [entity] that is within your reach and not outside the world border:
-        - `PlayerInteractEvent.EntityInteractSpecific` is fired. If the event is canceled, the pipeline ends.
-        - `Entity#interactAt` will be called **on the entity you are looking at**. If it returns a definitive result, the pipeline ends.
-            - If you want to add behavior for your own entity, override this method. If you want to add behavior for a vanilla entity, use the event.
-        - If the entity opens an interface (for example a villager trading GUI or a chest minecart GUI), the pipeline ends.
-        - `PlayerInteractEvent.EntityInteract` is fired. If the event is canceled, the pipeline ends.
-        - `Entity#interact` is called **on the entity you are looking at**. If it returns a definitive result, the pipeline ends.
-            - If you want to add behavior for your own entity, override this method. If you want to add behavior for a vanilla entity, use the event.
-            - For [`Mob`s][livingentity], the override of `Entity#interact` handles things like leashing and spawning babies when the `ItemStack` in your main hand is a spawn egg, and then defers mob-specific handling to `Mob#mobInteract`. The rules for results for `Entity#interact` apply here as well.
-        - If the entity you are looking at is a `LivingEntity`, `Item#interactLivingEntity` is called on the `ItemStack` in your main hand. If it returns a definitive result, the pipeline ends.
-    - If you are looking at a [block] that is within your reach and not outside the world border:
-        - `PlayerInteractEvent.RightClickBlock` is fired. If the event is canceled, the pipeline ends. You may also specifically deny only block or item usage in this event.
-        - `IItemExtension#onItemUseFirst` is called. If it returns a definitive result, the pipeline ends.
-        - If the player is not sneaking and the event does not deny block usage, `UseItemOnBlockEvent` is fired. If the event is canceled, the cancellation result is used. Otherwise, `Block#useItemOn` is called. If it returns a definitive result, the pipeline ends.
-        - If the `InteractionResult` is `TRY_WITH_EMPTY_HAND` and the executing hand is the main hand, then `Block#useWithoutItem` is called. If it returns a definitive result, the pipeline ends.
-        - If the event does not deny item usage, `Item#useOn` is called. If it returns a definitive result, the pipeline ends.
+  - If you are looking at an [entity] that is within your reach and not outside the world border:
+    - `PlayerInteractEvent.EntityInteractSpecific` is fired. If the event is canceled, the pipeline ends.
+    - `Entity#interactAt` will be called **on the entity you are looking at**. If it returns a definitive result, the pipeline ends.
+      - If you want to add behavior for your own entity, override this method. If you want to add behavior for a vanilla entity, use the event.
+    - If the entity opens an interface (for example a villager trading GUI or a chest minecart GUI), the pipeline ends.
+    - `PlayerInteractEvent.EntityInteract` is fired. If the event is canceled, the pipeline ends.
+    - `Entity#interact` is called **on the entity you are looking at**. If it returns a definitive result, the pipeline ends.
+      - If you want to add behavior for your own entity, override this method. If you want to add behavior for a vanilla entity, use the event.
+      - For [`Mob`s][livingentity], the override of `Entity#interact` handles things like leashing and spawning babies when the `ItemStack` in your main hand is a spawn egg, and then defers mob-specific handling to `Mob#mobInteract`. The rules for results for `Entity#interact` apply here as well.
+    - If the entity you are looking at is a `LivingEntity`, `Item#interactLivingEntity` is called on the `ItemStack` in your main hand. If it returns a definitive result, the pipeline ends.
+  - If you are looking at a [block] that is within your reach and not outside the world border:
+    - `PlayerInteractEvent.RightClickBlock` is fired. If the event is canceled, the pipeline ends. You may also specifically deny only block or item usage in this event.
+    - `IItemExtension#onItemUseFirst` is called. If it returns a definitive result, the pipeline ends.
+    - If the player is not sneaking and the event does not deny block usage, `UseItemOnBlockEvent` is fired. If the event is canceled, the cancellation result is used. Otherwise, `Block#useItemOn` is called. If it returns a definitive result, the pipeline ends.
+    - If the `InteractionResult` is `TRY_WITH_EMPTY_HAND` and the executing hand is the main hand, then `Block#useWithoutItem` is called. If it returns a definitive result, the pipeline ends.
+    - If the event does not deny item usage, `Item#useOn` is called. If it returns a definitive result, the pipeline ends.
 - `Item#use` is called. If it returns a definitive result, the pipeline ends.
 - The above process runs a second time, this time with the off hand instead of the main hand.
 
@@ -112,16 +112,16 @@ Returning `InteractionResult#FAIL` here while considering the main hand will pre
 - If the [`HitResult`][hitresult] in `Minecraft.getInstance().hitResult` is null or of type `MISS`, the pipeline ends.
 - `InputEvent.InteractionKeyMappingTriggered` is fired with the left mouse button and the main hand. If the [event][event] is [canceled][cancel], the pipeline ends.
 - Depending on what you are looking at (using the `HitResult` in `Minecraft.getInstance().hitResult`), different things happen:
-    - If you are looking at an [entity] that is within your reach:
-        - If `Entity#isPickable` returns false, the pipeline ends.
-        - If you are not in creative, the pipeline ends.
-        - `IEntityExtension#getPickedResult` is called. The resulting `ItemStack` is added to the player's inventory.
-            - By default, this method forwards to `Entity#getPickResult`, which can be overridden by modders.
-    - If you are looking at a [block] that is within your reach:
-        - `Block#getCloneItemStack` is called and becomes the "selected" `ItemStack`.
-            - By default, this returns the `Item` representation of the `Block`.
-        - If the Control key is held down, the player is in creative and the targeted block has a [`BlockEntity`][blockentity], the `BlockEntity`'s data is added to the "selected" `ItemStack`.
-        - If the player is in creative, the "selected" `ItemStack` is added to the player's inventory. Otherwise, a hotbar slot that matches the "selected" item is set active, if such a hotbar slot exists.
+  - If you are looking at an [entity] that is within your reach:
+    - If `Entity#isPickable` returns false, the pipeline ends.
+    - If you are not in creative, the pipeline ends.
+    - `IEntityExtension#getPickedResult` is called. The resulting `ItemStack` is added to the player's inventory.
+      - By default, this method forwards to `Entity#getPickResult`, which can be overridden by modders.
+  - If you are looking at a [block] that is within your reach:
+    - `Block#getCloneItemStack` is called and becomes the "selected" `ItemStack`.
+      - By default, this returns the `Item` representation of the `Block`.
+    - If the Control key is held down, the player is in creative and the targeted block has a [`BlockEntity`][blockentity], the `BlockEntity`'s data is added to the "selected" `ItemStack`.
+    - If the player is in creative, the "selected" `ItemStack` is added to the player's inventory. Otherwise, a hotbar slot that matches the "selected" item is set active, if such a hotbar slot exists.
 
 [attribute]: ../entities/attributes.md
 [attributemodifier]: ../entities/attributes.md#attribute-modifiers
