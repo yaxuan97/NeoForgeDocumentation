@@ -205,7 +205,7 @@ MOD 事件总线作为参数传递给你的 MOD 构造函数，然后你可以�
 这些事件大多数计划在未来版本中迁移到游戏事件总线。
 :::
 
-[modbus]: #event-buses
+[modbus]: #事件总线
 [newdatapackregistry]: registries.md#custom-datapack-registries
 [newregistry]: registries.md#custom-registries
 [registerevent]: registries.md#registerevent

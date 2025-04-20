@@ -12,15 +12,30 @@ Minecraft		Minecraft
 方块实体		block entity
 实体			entity
 物品			item
+物品堆			itemstack
 方块物品		blockitem
 方块状态		block state
 资源键			resource key
 方块属性		block properties
 方块类型		block type
 声音类型		sound type
+标签			tag
+资源键			resource key
+事件			event
+总线			bus
 
 //基础
 原版			vanilla
 
 //游戏内容
 大型垂滴叶		Big Dripleaf
+盔甲			armor
+头盔			helmet
+胸甲			chestplate
+护腿			leggings
+靴子			boots
+身体			body
+韧性			toughness
+击退抗性		knockback resistance
+附魔			enchantment
+发射器			Dispenser
